@@ -6,35 +6,71 @@ using System.Linq;
 public class Enemy : MonoBehaviour
 {
     List<Tile> path;
-    int current = 0;
-    bool reached = false;
+    enum State {Seek, Stun, Attack }
+    State currentState = State.Seek;
+
+    public PlayerController player;
+
+    public float stunLeft;
+    public float speed;
+
+    private float attackCD;
+
 
 
     // Update is called once per frame
     void Update()
     {
-        if (path != null && !reached)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, path[current].worldPos, 0.1f);
-            if(Vector3.Distance(transform.position, path[current].worldPos) < 0.1)
-            {
-                if (path[current].worldPos != path.Last().worldPos)
+        switch (currentState) {
+            case State.Seek:
+                if (path != null)
                 {
-                    current++;
+                    transform.position = Vector3.MoveTowards(transform.position, path[0].worldPos, speed * Time.deltaTime);
                 }
-                else
+                CheckDistance();
+                break;
+            case State.Stun:
+                stunLeft -= Time.deltaTime;
+                if (stunLeft <= 0)
                 {
-                    reached = true;
+                    currentState = State.Seek;
                 }
-                
-            }
+                break;
+            case State.Attack:
+                if(attackCD <= 0)
+                {
+                    player.TakeHit();
+                    attackCD = 1;
+                    CheckDistance();
+                }
+                break;
+            default:
+                break;
         }
+        attackCD -= Time.deltaTime;
+
     }
 
     public void SetNewPath(List<Tile> path)
     {
-        current = 0;
         this.path = path;
-        reached = false;
+    }
+
+    public void TookHit()
+    {
+        currentState = State.Stun;
+        stunLeft = 1;
+    }
+
+    void CheckDistance()
+    {
+        if(Vector3.Distance(transform.position, path.Last().worldPos) > 0.8)
+        {
+            currentState = State.Seek;
+        }
+        else
+        {
+            currentState = State.Attack;
+        }
     }
 }
