@@ -9,6 +9,7 @@ public class Enemy : MonoBehaviour
     enum State {Seek, Stun, Attack }
     State currentState = State.Seek;
 
+    Database db;
     public PlayerController player;
 
     public float stunLeft;
@@ -17,6 +18,10 @@ public class Enemy : MonoBehaviour
     private float attackCD;
 
 
+    private void Awake()
+    {
+        db = FindObjectOfType<Database>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -25,7 +30,7 @@ public class Enemy : MonoBehaviour
             case State.Seek:
                 if (path != null)
                 {
-                    transform.position = Vector3.MoveTowards(transform.position, path[0].worldPos, speed * Time.deltaTime);
+                    transform.position = Vector3.MoveTowards(transform.position, path[0].worldPos, (speed + db.GetSpeedMod()) * Time.deltaTime);
                 }
                 CheckDistance();
                 break;
@@ -59,7 +64,7 @@ public class Enemy : MonoBehaviour
     public void TookHit()
     {
         currentState = State.Stun;
-        stunLeft = 1;
+        stunLeft = 2;
     }
 
     void CheckDistance()

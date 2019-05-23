@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -44,7 +45,6 @@ public class PlayerController : MonoBehaviour
             Physics.Raycast(transform.position, camera.transform.forward*100, out shot);
             shotCD = 1;
             Debug.DrawRay(transform.position, camera.transform.forward * 10, Color.red, 1);
-            print(shot.collider.name);
             if (shot.collider.name == "Enemy")
             {
                 Enemy enemy = shot.collider.GetComponent<Enemy>();
@@ -87,8 +87,17 @@ public class PlayerController : MonoBehaviour
         lives.text = "Health: " + health;
         if(health <= 0)
         {
-            print("dead");
             this.enabled = false;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            FindObjectOfType<Database>().GameOver();
         }
     }
+
+    public void ReloadScene()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
 }

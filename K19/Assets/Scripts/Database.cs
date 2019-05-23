@@ -4,11 +4,24 @@ using UnityEngine;
 using Mono.Data.Sqlite;
 using System.Data;
 using System;
+using Random = UnityEngine.Random;
+using UnityEngine.UI;
 
 public class Database : MonoBehaviour
 {
+    public Text log;
+    public Text scoreScreen;
+    public GameObject GameUI;
+    public GameObject GameOverUI;
+
     IDataReader reader;
     IDbCommand dbCommand;
+
+    List<String> collectedDrops = new List<string>();
+    List<String> possibleDrops = new List<string>();
+    List<int> dropWeights = new List<int>();
+    int totalWeight;
+    string newText;
 
 
     // Start is called before the first frame update
@@ -20,21 +33,79 @@ public class Database : MonoBehaviour
         dbConnection.Open();
         dbCommand = dbConnection.CreateCommand();
 
-        string sqlQuery = "SELECT LootName, Weight " + "FROM Commons";
-        dbCommand.CommandText = sqlQuery;
+        //string sqlQuery = "SELECT LootName, Weight " + "FROM Commons";
+        //dbCommand.CommandText = sqlQuery;
 
     }
 
     // Update is called once per frame
     void Update()
     {
+        //reader = dbCommand.ExecuteReader();
+        //while (reader.Read())
+        //{
+        //    string name = reader.GetString(0);
+        //    int weigth = reader.GetInt32(1);
+        //   // print(name + weigth);
+        //}
+        //reader.Close();
+
+    }
+
+    public void GetDrop(string table)
+    {
+        string sqlQuery = "SELECT LootName, Weight " + "FROM " + table;
+        dbCommand.CommandText = sqlQuery;
+
         reader = dbCommand.ExecuteReader();
-        while (reader.Read())
+        while(reader.Read())
         {
-            string name = reader.GetString(0);
-            print(name);
+            possibleDrops.Add(reader.GetString(0));
+            dropWeights.Add(reader.GetInt32(1));
+            totalWeight += reader.GetInt32(1);
         }
         reader.Close();
 
+        int i = Random.Range(0, totalWeight);
+        totalWeight = 0;
+
+        for(int d = 0; d < possibleDrops.Count; d++)
+        {
+            totalWeight += dropWeights[d];
+            if(i>totalWeight)
+            {
+                continue;
+            }
+            collectedDrops.Add(possibleDrops[d] + " (" + table + ")");
+            UpdateDropLog();
+            break;
+        }
+
+        totalWeight = 0;
+        possibleDrops = new List<string>();
+        dropWeights = new List<int>();
+    }
+
+    void UpdateDropLog()
+    {
+        newText = "Loot:\n";
+        foreach(String s in collectedDrops)
+        {
+            newText += s + "\n";
+        }
+        log.text = newText;
+    }
+
+    public float GetSpeedMod()
+    {
+        return collectedDrops.Count * 0.05f;
+    }
+
+    public void GameOver()
+    {
+        Time.timeScale = 0;
+        GameUI.SetActive(false);
+        GameOverUI.SetActive(true);
+        scoreScreen.text = "You looted " + collectedDrops.Count + " items!";
     }
 }
