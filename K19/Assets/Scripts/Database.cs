@@ -32,25 +32,8 @@ public class Database : MonoBehaviour
         dbConnection = (IDbConnection)new SqliteConnection(conn);
         dbConnection.Open();
         dbCommand = dbConnection.CreateCommand();
-
-        //string sqlQuery = "SELECT LootName, Weight " + "FROM Commons";
-        //dbCommand.CommandText = sqlQuery;
-
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        //reader = dbCommand.ExecuteReader();
-        //while (reader.Read())
-        //{
-        //    string name = reader.GetString(0);
-        //    int weigth = reader.GetInt32(1);
-        //   // print(name + weigth);
-        //}
-        //reader.Close();
-
-    }
 
     public void GetDrop(string table)
     {
